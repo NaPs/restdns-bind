@@ -45,7 +45,7 @@ class RecordFactory(object):
         return dns.rdtypes.IN.AAAA.AAAA(IN, AAAA, ipv6)
 
     def create_mx(self, pref, name):
-        return dns.rdtypes.ANY.MX.MX(IN, MX, pref, dns.name.from_text(name, self.origin))
+        return dns.rdtypes.ANY.MX.MX(IN, MX, int(pref), dns.name.from_text(name, self.origin))
 
     def create_ns(self, name):
         return dns.rdtypes.ANY.NS.NS(IN, NS, dns.name.from_text(name, self.origin))
@@ -57,4 +57,4 @@ class RecordFactory(object):
         return dns.rdtypes.ANY.TXT.TXT(IN, TXT, text)
 
     def create_srv(self, priority, weight, port, target):
-        return dns.rdtypes.IN.SRV.SRV(IN, SRV, priority, weight, port, dns.name.from_text(target, self.origin))
+        return dns.rdtypes.IN.SRV.SRV(IN, SRV, int(priority), int(weight), int(port), dns.name.from_text(target, self.origin))
