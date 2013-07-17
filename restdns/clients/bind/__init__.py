@@ -44,7 +44,7 @@ class RestdnsBind(object):
 
         # Delete old zones:
         for name in to_delete:
-            filename = os.path.join(self._output_directory, name)
+            filename = os.path.join(self._output_directory, '%s.zone' % name)
             os.unlink(filename)
 
         # Generate zones:
