@@ -6,12 +6,13 @@ import dns.rdtypes.ANY.NS
 import dns.rdtypes.ANY.CNAME
 import dns.rdtypes.ANY.TXT
 import dns.rdtypes.ANY.HINFO
+import dns.rdtypes.ANY.PTR
 import dns.rdtypes.IN.A
 import dns.rdtypes.IN.AAAA
 import dns.rdtypes.IN.SRV
 
 from dns.rdataclass import IN
-from dns.rdatatype import SOA, A, AAAA, NS, CNAME, SRV, TXT, MX, HINFO
+from dns.rdatatype import SOA, A, AAAA, NS, CNAME, SRV, TXT, MX, HINFO, PTR
 
 
 class RecordFactory(object):
@@ -62,3 +63,6 @@ class RecordFactory(object):
 
     def create_hinfo(self, hardware, os):
         return dns.rdtypes.ANY.HINFO.HINFO(IN, HINFO, hardware, os)
+
+    def create_ptr(self, name):
+        return dns.rdtypes.ANY.PTR.PTR(IN, PTR, dns.name.from_text(name))
