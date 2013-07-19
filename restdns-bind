@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import logging
+import logging.handlers
 import argparse
 
 from restdns.clients.bind import RestdnsBind
@@ -9,10 +11,27 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bind daemon zone generator for Restdns')
     parser.add_argument('--do-not-rndc-reload', '-d', dest='run_rndc', default=True,
                         action='store_false', help='Don\'t run the rndc reload command')
+    parser.add_argument('--debug', '-b', dest='level', default=logging.INFO,
+                        action='store_const', const=logging.DEBUG,
+                        help='Enable debug mode')
+    parser.add_argument('--syslog', '-s', action='store_true',
+                        help='Log messages to syslog daemon')
     parser.add_argument('restdns_base_url', help='Base URL of the Restdns instance')
     parser.add_argument('output_directory', help='Where to put the zone files')
 
     args = parser.parse_args()
 
-    app = RestdnsBind(args.restdns_base_url, args.output_directory, args.run_rndc)
+    # Configuring logging facility:
+    logger = logging.getLogger('')
+    logger.setLevel(args.level)
+    if args.syslog:
+        facility = logging.handlers.SysLogHandler.LOG_DAEMON
+        handler = logging.handlers.SysLogHandler(address='/dev/log', facility=facility)
+    else:
+        handler = logging.StreamHandler()
+    format = logging.Formatter('restdns-cli: %(levelname)s %(message)s')
+    handler.setFormatter(format)
+    logger.addHandler(handler)
+
+    app = RestdnsBind(logger, args.restdns_base_url, args.output_directory, args.run_rndc)
     app.run()

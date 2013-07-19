@@ -19,7 +19,8 @@ zone "{name}." {{
 
 class RestdnsBind(object):
 
-    def __init__(self, restdns_base_url, output_directory, run_rndc):
+    def __init__(self, logger, restdns_base_url, output_directory, run_rndc):
+        self.logger = logger
         self._restdns_base_url = restdns_base_url.rstrip('/')
         self._output_directory = output_directory
         self._run_rndc = run_rndc
@@ -34,6 +35,7 @@ class RestdnsBind(object):
         # Get zones to delete (zones existing locally but no more on the
         # restdns server):
         to_delete |= set(local_zones) - set(remote_zones)
+        self.logger.debug('Zones to delete: %s', ','.join(to_delete) or 'none')
 
         # Get zones to generate (not existing locally or higher serial):
         for name, infos in remote_zones.iteritems():
@@ -43,11 +45,13 @@ class RestdnsBind(object):
             else:
                 if infos['serial'] > local_infos['serial']:
                     to_write.add(name)
+        self.logger.debug('Zones to write: %s', ','.join(to_write) or 'none')
 
         # Delete old zones:
         for name in to_delete:
             filename = os.path.join(self._output_directory, '%s.zone' % name)
             os.unlink(filename)
+            self.logger.debug('Removed: %s', filename)
 
         # Generate zones:
         for name in to_write:
@@ -57,12 +61,21 @@ class RestdnsBind(object):
         # Regenerate Bind configuration file if something have changed;
         if to_write or to_delete:
             self._write_zone_conf(remote_zones.keys())
+            self.logger.debug('Regenerated configuration file')
 
         # Reload Bind configuration using rndc:
         if self._run_rndc and (to_write or to_delete):
-            rndc = subprocess.Popen(['rndc', 'reload'], stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            rndc.wait()
+            self.logger.debug('Executing rndc reload...')
+            try:
+                rndc = subprocess.Popen(['rndc', 'reload'],
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+            except OSError as err:
+                self.logger.warning('Error while invoking rndc reload: %s', err)
+            else:
+                rcode = rndc.wait()
+                if rcode:
+                    self.logger.warning('Non-null return code when executing rndc reload (%s)', rcode)
 
     def _write_zone_conf(self, zones):
         """ Write the zone list configuration.
@@ -122,3 +135,4 @@ class RestdnsBind(object):
         # Write the $ORIGIN statement (dnspython seem not able to write it)
         fzone.write('$ORIGIN %s\n' % origin)
         dns_zone.to_file(fzone, relativize=False)
+        self.logger.debug('Wrote: %s', zone_filename)
