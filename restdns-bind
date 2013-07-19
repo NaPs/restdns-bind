@@ -7,10 +7,12 @@ from restdns.clients.bind import RestdnsBind
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bind daemon zone generator for Restdns')
+    parser.add_argument('--do-not-rndc-reload', '-d', dest='run_rndc', default=True,
+                        action='store_false', help='Don\'t run the rndc reload command')
     parser.add_argument('restdns_base_url', help='Base URL of the Restdns instance')
     parser.add_argument('output_directory', help='Where to put the zone files')
 
     args = parser.parse_args()
 
-    app = RestdnsBind(args.restdns_base_url, args.output_directory)
+    app = RestdnsBind(args.restdns_base_url, args.output_directory, args.run_rndc)
     app.run()

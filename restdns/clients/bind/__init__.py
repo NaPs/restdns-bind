@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 import requests
 
@@ -18,9 +19,10 @@ zone "{name}." {{
 
 class RestdnsBind(object):
 
-    def __init__(self, restdns_base_url, output_directory):
+    def __init__(self, restdns_base_url, output_directory, run_rndc):
         self._restdns_base_url = restdns_base_url.rstrip('/')
         self._output_directory = output_directory
+        self._run_rndc = run_rndc
 
     def run(self):
         remote_zones = self._get_remote_zones()
@@ -55,6 +57,12 @@ class RestdnsBind(object):
         # Regenerate Bind configuration file if something have changed;
         if to_write or to_delete:
             self._write_zone_conf(remote_zones.keys())
+
+        # Reload Bind configuration using rndc:
+        if self._run_rndc and (to_write or to_delete):
+            rndc = subprocess.Popen(['rndc', 'reload'], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            rndc.wait()
 
     def _write_zone_conf(self, zones):
         """ Write the zone list configuration.
