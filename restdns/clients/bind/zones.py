@@ -7,12 +7,13 @@ import dns.rdtypes.ANY.CNAME
 import dns.rdtypes.ANY.TXT
 import dns.rdtypes.ANY.HINFO
 import dns.rdtypes.ANY.PTR
+import dns.rdtypes.ANY.SPF
 import dns.rdtypes.IN.A
 import dns.rdtypes.IN.AAAA
 import dns.rdtypes.IN.SRV
 
 from dns.rdataclass import IN
-from dns.rdatatype import SOA, A, AAAA, NS, CNAME, SRV, TXT, MX, HINFO, PTR
+from dns.rdatatype import SOA, A, AAAA, NS, CNAME, SRV, TXT, MX, HINFO, PTR, SPF
 
 
 class RecordFactory(object):
@@ -66,3 +67,6 @@ class RecordFactory(object):
 
     def create_ptr(self, name):
         return dns.rdtypes.ANY.PTR.PTR(IN, PTR, dns.name.from_text(name))
+
+    def create_spf(self, text):
+        return dns.rdtypes.ANY.SPF.SPF(IN, SPF, [text])
