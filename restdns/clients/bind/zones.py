@@ -57,7 +57,7 @@ class RecordFactory(object):
         return dns.rdtypes.ANY.CNAME.CNAME(IN, CNAME, dns.name.from_text(name, self.origin))
 
     def create_txt(self, text):
-        return dns.rdtypes.ANY.TXT.TXT(IN, TXT, text)
+        return dns.rdtypes.ANY.TXT.TXT(IN, TXT, [text])
 
     def create_srv(self, priority, weight, port, target):
         return dns.rdtypes.IN.SRV.SRV(IN, SRV, int(priority), int(weight), int(port), dns.name.from_text(target, self.origin))
