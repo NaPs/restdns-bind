@@ -42,7 +42,7 @@ the Debian package, an example crontab file has been installed in
 
 Where:
 
-* bind is the user used to launch restdns-bind (this used must be able to reload
+* bind is the user used to launch restdns-bind (this user must be able to reload
   bind configuration)
 * http://my-restdns-server/ the base URL of your restdns instance
 * /etc/bind/restdns/ the path where to write the zone files
