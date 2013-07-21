@@ -1,0 +1,21 @@
+Source: restdns-bind
+Section: python
+Priority: optional
+Maintainer: Antoine Millet <antoine@inaps.org>
+Build-Depends: debhelper (>= 8),
+               python-central (>= 0.6),
+               cdbs (>= 0.4.50),
+               python-setuptools,
+               python
+XS-Python-Version: >= 2.6
+Standards-Version: 3.9.1
+
+Package: restdns-bind
+Architecture: all
+Depends: ${misc:Depends},
+         ${python:Depends},
+         python-dnspython,
+         python-requests,
+XB-Python-Version: ${python:Versions}
+Description: REST API to manage DNS - Bind9 zonefile generator
+ A Bind9 zonefile generator for Restdns.

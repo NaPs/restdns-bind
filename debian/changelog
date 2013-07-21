@@ -1,0 +1,5 @@
+restdns-bind (1.0-1) wheezy; urgency=low
+
+  * Initial release of the package.
+
+ -- Antoine Millet <antoine@inaps.org>  Sun, 21 Jul 2013 20:35:00 +0200
