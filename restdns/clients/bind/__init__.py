@@ -28,11 +28,12 @@ def json_compat(response):
 
 class RestdnsBind(object):
 
-    def __init__(self, logger, restdns_base_url, output_directory, run_rndc):
+    def __init__(self, logger, restdns_base_url, output_directory, run_rndc, rndc_binary_path):
         self.logger = logger
         self._restdns_base_url = restdns_base_url.rstrip('/')
         self._output_directory = output_directory
         self._run_rndc = run_rndc
+        self._rndc_binary_path = rndc_binary_path
 
     def run(self):
         remote_zones = self._get_remote_zones()
@@ -76,7 +77,7 @@ class RestdnsBind(object):
         if self._run_rndc and (to_write or to_delete):
             self.logger.debug('Executing rndc reload...')
             try:
-                rndc = subprocess.Popen(['rndc', 'reload'],
+                rndc = subprocess.Popen([self._rndc_binary_path, 'reload'],
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
             except OSError as err:

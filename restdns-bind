@@ -16,6 +16,8 @@ if __name__ == '__main__':
                         help='Enable debug mode')
     parser.add_argument('--syslog', '-s', action='store_true',
                         help='Log messages to syslog daemon')
+    parser.add_argument('--rndc-binary-path', default='/usr/sbin/rndc',
+                       help='Specify path to the rndc binary (default: %default)')
     parser.add_argument('restdns_base_url', help='Base URL of the Restdns instance')
     parser.add_argument('output_directory', help='Where to put the zone files')
 
@@ -33,5 +35,6 @@ if __name__ == '__main__':
     handler.setFormatter(format)
     logger.addHandler(handler)
 
-    app = RestdnsBind(logger, args.restdns_base_url, args.output_directory, args.run_rndc)
+    app = RestdnsBind(logger, args.restdns_base_url, args.output_directory,
+                      args.run_rndc, args.rndc_binary_path)
     app.run()
