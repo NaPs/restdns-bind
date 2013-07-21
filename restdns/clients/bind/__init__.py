@@ -17,6 +17,15 @@ zone "{name}." {{
 '''
 
 
+def json_compat(response):
+    """ Compatibility layer for requests JSON helper pre and post v1.0.0.
+    """
+    if callable(response.json):
+        return response.json()
+    else:
+        return response.json
+
+
 class RestdnsBind(object):
 
     def __init__(self, logger, restdns_base_url, output_directory, run_rndc):
@@ -87,7 +96,7 @@ class RestdnsBind(object):
     def _get_remote_zones(self):
         zones_url = self._restdns_base_url + '/zones'
         zones = {}
-        for zone in requests.get(zones_url).json()['zones']:
+        for zone in json_compat(requests.get(zones_url))['zones']:
             zones[zone['name']] = {'url': zone['url'], 'serial': zone['serial']}
         return zones
 
@@ -111,8 +120,8 @@ class RestdnsBind(object):
         """
         # Get the zone details:
         zone_url = self._restdns_base_url + zone_url
-        zone = requests.get(zone_url).json()
-        records = requests.get(self._restdns_base_url + zone['records_url']).json()
+        zone = json_compat(requests.get(zone_url))
+        records = json_compat(requests.get(self._restdns_base_url + zone['records_url']))
         origin = dns.name.from_text(zone['name'] + '.')
         dns_zone = dns.zone.Zone(origin)
         record_factory = RecordFactory(origin)
