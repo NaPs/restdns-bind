@@ -18,6 +18,7 @@ setup(name='restdns-bind',
       license='MIT',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       namespace_packages=['restdns', 'restdns.clients'],
+      scripts=['restdns-bind'],
       include_package_data=True,
       zip_safe=True,
       install_requires=['dnspython', 'requests'])
