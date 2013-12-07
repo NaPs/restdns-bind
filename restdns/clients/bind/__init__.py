@@ -116,13 +116,19 @@ class RestdnsBind(object):
         soa = rd_set[0]  # Only one SOA is allowed per zone
         return zone.origin.to_text(omit_final_dot=True), soa.serial
 
+    def _install_records(self, record_factory, dns_zone, records_url):
+        records = json_compat(requests.get(self._restdns_base_url + records_url))
+        for record in records['records']:
+            rd_set = dns_zone.get_rdataset(record['name'], record['type'], create=True)
+            rd_set.add(record_factory.create_record(record['type'], record['parameters']))
+
+
     def _write_zone(self, zone_url):
         """ Write a local zone file using a remote zone URL.
         """
         # Get the zone details:
         zone_url = self._restdns_base_url + zone_url
         zone = json_compat(requests.get(zone_url))
-        records = json_compat(requests.get(self._restdns_base_url + zone['records_url']))
         origin = dns.name.from_text(zone['name'] + '.')
         dns_zone = dns.zone.Zone(origin)
         record_factory = RecordFactory(origin)
@@ -136,9 +142,7 @@ class RestdnsBind(object):
                                              zone['expire'],
                                              zone['minimum']))
 
-        for record in records['records']:
-            rd_set = dns_zone.get_rdataset(record['name'], record['type'], create=True)
-            rd_set.add(record_factory.create_record(record['type'], record['parameters']))
+        self._install_records(record_factory, dns_zone, zone['records_url'])
 
         zone_filename = os.path.join(self._output_directory, '%s.zone' % zone['name'])
         fzone = open(zone_filename, 'w')
