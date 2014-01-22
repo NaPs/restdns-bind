@@ -34,9 +34,11 @@ class RestdnsBind(object):
         self._output_directory = output_directory
         self._run_rndc = run_rndc
         self._rndc_binary_path = rndc_binary_path
+        self.zones = []
 
     def run(self):
         remote_zones = self._get_remote_zones()
+        self.zones = remote_zones
         local_zones = self._get_local_zones()
 
         to_write = set()
@@ -116,11 +118,25 @@ class RestdnsBind(object):
         soa = rd_set[0]  # Only one SOA is allowed per zone
         return zone.origin.to_text(omit_final_dot=True), soa.serial
 
-    def _install_records(self, record_factory, dns_zone, records_url):
+    def _install_records(self, record_factory, dns_zone, records_url, prefix=''):
         records = json_compat(requests.get(self._restdns_base_url + records_url))
         for record in records['records']:
-            rd_set = dns_zone.get_rdataset(record['name'], record['type'], create=True)
-            rd_set.add(record_factory.create_record(record['type'], record['parameters']))
+            if record['type'] == 'include':
+                zone_name = record['parameters']['zone']
+                if zone_name in self.zones:
+                    zone_infos = self.zones[zone_name]
+                    zone_url = self._restdns_base_url + zone_infos['url']
+                    zone = json_compat(requests.get(zone_url))
+                    self._install_records(record_factory, dns_zone, zone['records_url'], prefix=record['name'])
+            else:
+                if prefix and record['name']:
+                    name = '.'.join((prefix, record['name']))
+                elif prefix:
+                    name = prefix
+                else:
+                    name = record['name']
+                rd_set = dns_zone.get_rdataset(name, record['type'], create=True)
+                rd_set.add(record_factory.create_record(record['type'], record['parameters']))
 
 
     def _write_zone(self, zone_url):
